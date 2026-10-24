@@ -20,9 +20,11 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 
 ## Screenshots
 
-| Task list | Create a task | Active Frame |
-| :---: | :---: | :---: |
-| <img src="docs/screenshots/task-list.png" width="280" alt="Task list with priority cards and filters"> | <img src="docs/screenshots/new-task.png" width="280" alt="New task with priority and due date"> | <img src="docs/screenshots/active-frame.png" width="280" alt="Minimized app showing task counts and a preview"> |
+| Task list | Create a task |
+| :---: | :---: |
+| <img src="docs/screenshots/task-list.png" width="360" alt="Task list"> | <img src="docs/screenshots/new-task.png" width="360" alt="Create a task"> |
+| **Completed tasks** | **Active Frame** |
+| <img src="docs/screenshots/completed-tasks.png" width="360" alt="Completed tasks"> | <img src="docs/screenshots/active-frame.png" width="360" alt="Active Frame"> |
 
 ---
 
