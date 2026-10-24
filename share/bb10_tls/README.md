@@ -31,75 +31,22 @@
 - Any subsequent call to `bb10_tls_read` or `bb10_tls_write` on a connection that has reached the closed state returns `BB10_TLS_ERR_IO_FAILED` (-13), distinguishing post-shutdown I/O attempts from a peer closure alert received during active transfer (`BB10_TLS_ERR_CLOSED` / -3).
 - In nonblocking mode, if alert transmission cannot complete immediately, `bb10_tls_shutdown` returns `BB10_TLS_ERR_WANT_WRITE` or `BB10_TLS_ERR_WANT_READ`. The application must wait for socket readiness and retry until `BB10_TLS_OK` or an error is returned.
 
-## 5. Canonical Consumer Example (C99 / C++03)
+## 5. Consumer Examples and Build Entry
 
-```c
-#include <bb10_tls/bb10_tls.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
+`bb10_tls` is developed in this project and distributed under MIT; bundled OpenSSL
+retains its Apache 2.0 license. See [LICENSE](LICENSE).
 
-int fetch_status(const char* host, int port, const char* ca_bundle) {
-    // 1. Create client context
-    bb10_tls_context_t* ctx = bb10_tls_context_create(BB10_TLS_POLICY_PUBLIC_PKI);
-    if (!ctx) return -1;
+Use the [root build instructions](../../README.md#building-from-source) for the
+pinned host and BB10 environments. The exported CMake target is
+`bb10_tls::bb10_tls`; it links the static TLS libraries and required platform
+runtime libraries without exposing OpenSSL in the public API.
 
-    if (ca_bundle && bb10_tls_context_set_ca_path(ctx, ca_bundle) != BB10_TLS_OK) {
-        bb10_tls_context_destroy(ctx);
-        return -2;
-    }
+For runnable examples with checked handshake, I/O and teardown behavior, see:
 
-    // 2. Open underlying TCP socket
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-        bb10_tls_context_destroy(ctx);
-        return -3;
-    }
+- [Standalone consumer](../../tests/standalone_consumer/test_consumer.cpp), built
+  against the installed SDK prefix.
+- [TLS tests](../../tests/tls/test_bb10_tls_all.cpp).
+- [Diagnostic CLI](../../src/tools/bb10_tls_probe.cpp).
 
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons((uint16_t)port);
-    inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
-
-    if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) != 0) {
-        close(sock); // socket closed by caller since connection creation was not reached
-        bb10_tls_context_destroy(ctx);
-        return -4;
-    }
-
-    // 3. Create TLS connection handle (transfers socket ownership upon success)
-    bb10_tls_connection_t* conn = bb10_tls_connection_create(ctx, sock);
-    if (!conn) {
-        close(sock); // socket closed by caller because creation failed
-        bb10_tls_context_destroy(ctx);
-        return -5;
-    }
-    // Note: sock is now owned by conn! Caller must NOT close(sock) from this point on.
-
-    // 4. Perform TLS handshake
-    if (bb10_tls_connect(conn, host) != BB10_TLS_OK) {
-        fprintf(stderr, "TLS error: %s\n", bb10_tls_get_last_error(conn));
-        bb10_tls_connection_destroy(conn); // automatically closes sock!
-        bb10_tls_context_destroy(ctx);
-        return -6;
-    }
-
-    // 5. Send HTTP probe
-    const char* req = "GET / HTTP/1.0\r\n\r\n";
-    size_t written = 0;
-    bb10_tls_write(conn, req, strlen(req), &written);
-
-    // 6. Graceful TLS shutdown
-    bb10_tls_shutdown(conn);
-
-    // 7. Destroy connection (closes underlying socket exactly once)
-    bb10_tls_connection_destroy(conn);
-
-    // 8. Destroy context
-    bb10_tls_context_destroy(ctx);
-    return 0;
-}
-```
+These are developer examples. Phone installation is described in the
+[root README](../../README.md#installation).

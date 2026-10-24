@@ -1,5 +1,10 @@
 # RFC: Standalone Modern TLS 1.3 & HTTPS Subsystem for BlackBerry 10
 
+This RFC records subsystem design and proposed acceptance scenarios. Other-project
+consumer examples describe integration contracts, not Todoist installation
+requirements. Hardware scenarios marked pending are not release acceptance claims.
+For current installation and build commands, use the [README](../README.md).
+
 ## 1. Metadata & Overview
 
 | Field | Value |
@@ -10,7 +15,7 @@
 | **Reviewer & Architecture Partner** | Codex (Review Lead & Architecture Partner) |
 | **Status** | Consensus-Aligned RFC (Post Round 0 Revision 2 Resolution) |
 | **Target Runtime** | BlackBerry 10 OS 10.3.3.3216 (QNX Neutrino 6.6 RTOS, ARMv7-A / Krait 400) |
-| **Host Toolchain** | Clang 19.1.7 (`bb10-cc`) with BB10 sysroot targeting `arm-unknown-nto-qnx8.0.0eabi` (`bb10-native-dev:local`) |
+| **Host Toolchain** | Clang 19.1.7 (`bb10-cc`) with BB10 sysroot targeting BB10 ARMv7 (`bb10-native-dev:local`) |
 
 ---
 
@@ -119,7 +124,7 @@ Rather than constructing an ad-hoc, tightly coupled HTTP client embedded in Todo
      - If `SSL_write()` returns `SSL_ERROR_WANT_READ` (e.g., during TLS 1.3 KeyUpdate or renegotiation), the adapter monitors socket *readability* before retrying `SSL_write()`.
      - If `SSL_read()` returns `SSL_ERROR_WANT_WRITE`, the adapter monitors socket *writability* before retrying `SSL_read()`.
   5. **Teardown & Clean Closure**:
-     - `bb10_tls_connection_close()` initiates a clean TLS shutdown (`SSL_shutdown()`, sending close-notify alert).
+     - `bb10_tls_shutdown()` initiates a clean TLS shutdown (`SSL_shutdown()`, sending close-notify alert).
      - `bb10_tls_connection_destroy()` checks `if (m_fd >= 0) { ::close(m_fd); m_fd = -1; }`, closing the owned fd once (including on failed handshakes) and invalidating the descriptor to `-1` to prevent double-close.
   6. **HTTP Protocol Layering**:
      - LocalSend's HTTP request/response parsing (e.g. `HttpConnection` parsing `/api/localsend/v2/prepare-upload`) sits strictly *above* decrypted I/O. `bb10_tls` delivers plain bytes; LocalSend processes plaintext.
@@ -158,7 +163,7 @@ To ensure an external project (such as `LocalSend-BB10` or a standalone test con
     - `${PACKAGE_PREFIX_DIR}/lib/libbb10_tls.a`
     - `${PACKAGE_PREFIX_DIR}/lib/libssl.a`
     - `${PACKAGE_PREFIX_DIR}/lib/libcrypto.a`
-    - `socket` (`libsocket.so.3`), `m`
+    - On BB10: `cpp`, `socket` (`libsocket.so.3`), `m`. On the host: `stdc++`, `pthread`, `${CMAKE_DL_LIBS}`, `m`.
   - `INTERFACE_LINK_OPTIONS`: `-Wl,--exclude-libs,ALL`
 - **Installed Artifacts**:
   - `include/bb10_tls/bb10_tls.h`: Pure C public API with opaque struct pointers (`typedef struct bb10_tls_context bb10_tls_context_t;`). **Zero OpenSSL internal headers are exposed in public headers**.
@@ -192,7 +197,7 @@ To ensure an external project (such as `LocalSend-BB10` or a standalone test con
 
 #### Detailed Policy Rules:
 1. **Public PKI Policy (Todoist)**:
-   - **Verification Rule**: Full X.509 certificate chain validation against bundled Mozilla CA bundle (`assets/certs/cacert.pem`).
+   - **Verification Rule**: Full X.509 certificate chain validation against bundled Mozilla CA bundle (`vendor/sources/cacert.pem`).
    - **Fail-Closed Guarantee**: If CA bundle is absent, unreadable, or corrupted, handshake terminates immediately with `BB10_TLS_ERR_CA_LOAD_FAILED`. Never falls back to expired system trust stores (`/etc/ssl/certs`).
    - **SAN Precedence (RFC 6125)**: Subject Alternative Names (`dNSName`, `iPAddress`) take strict precedence over Common Name (`CN`). If a SAN is present, CN is completely ignored and cannot override conflicting SANs.
    - **Anti-Replay**: TLS 1.3 0-RTT is disabled for mutating HTTP requests (`POST`, `PUT`, `DELETE`).
@@ -267,7 +272,7 @@ Plain `bool` variables are not thread-safe in C++03. Synchronization is enforced
   - **UI Destruction Invalidation**: When the UI is destroyed, it simply ceases calling `drainNotifications()`. Queued snapshots remain passive inert data that are deallocated safely when the queue or engine is destroyed. This structurally eliminates any possible dangling pointer dereference or callback to destroyed UI objects.
 
 #### SQLite Database Thread-Confinement:
-- The SQLite database connection (`TodoistStorage`) is strictly thread-confined to the `SyncWorkerThread`. The UI thread never accesses SQLite directly.
+- In the integrated application, `DatabaseManager` serializes transaction ownership across UI mutations and worker response ingestion. Both threads access repositories under that ownership contract; the UI does not perform network I/O. See the [M4 integration contract](M4_CASCADES_UI_SYSTEM_RFC.md#31-strict-non-blocking-ui-thread-rules).
 
 #### Retry & Backoff Architecture:
 - **Stateless Transport**: `ISyncTransport::executeSyncPost` performs a single HTTP request with **no hidden retries**.
@@ -344,7 +349,7 @@ To ensure TLS 1.3 is verifiably delivered rather than merely cross-compiled, M3 
     bb10_tls_probe client --url https://<lan_host>:8442 --ca-bundle test_ca.pem --min-tls-version TLSv1.3 --max-tls-version TLSv1.3
     -> Assert handshake failure (version mismatch).
 - **Supplemental Smoke & Negative Tests**:
-  - Smoke test against live Todoist: bb10_tls_probe client --url https://api.todoist.com/api/v1/sync --ca-bundle assets/certs/cacert.pem
+  - Smoke test against live Todoist: bb10_tls_probe client --url https://api.todoist.com/api/v1/sync --ca-bundle vendor/sources/cacert.pem
   - Expired certificate rejection: bb10_tls_probe client --url https://expired.badssl.com --expect-error CERT_VERIFY_FAIL
   - Wrong hostname rejection: bb10_tls_probe client --url https://wrong.host.badssl.com --expect-error CERT_VERIFY_FAIL
   - Absent/corrupted CA bundle: bb10_tls_probe client --url https://api.todoist.com/api/v1/sync --ca-bundle non_existent.pem --expect-error CA_LOAD_FAIL
@@ -366,7 +371,7 @@ To ensure TLS 1.3 is verifiably delivered rather than merely cross-compiled, M3 
 2. Relocatable CMake package: `lib/cmake/bb10_tls/bb10_tls-config.cmake`.
 3. `src/network/` implementation of `ISyncTransport` and `SyncWorkerThread`.
 4. Standalone external consumer test: `tests/standalone_consumer/test_consumer.cpp`.
-5. Diagnostic probe executable: `bin/bb10_tls_probe` with reproducible CLI commands (`client`, `server`, `fingerprint`).
+5. Diagnostic probe executable: `build/bb10/bb10_tls_probe` with reproducible CLI commands (`client`, `server`, `fingerprint`).
 
 ---
 

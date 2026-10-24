@@ -25,7 +25,7 @@ Milestone 4 completes the end-to-end engineering assembly of **Todoist on BlackB
    - **Host-Portable Presenter & State Machine (`TodoistAppController`)**: Pure C++03 presentation controller orchestrating local task CRUD, project/date/completion filtering, square-screen sorting, physical QWERTY keyboard shortcut dispatch, 3-second mutation sync debouncing, non-blocking worker event draining, credential management, and Active Frame lifecycle transitions.
    - **Qt 4.8.6 / Cascades Model & Bridge Layer (`CascadesTaskListModel`, `QtTaskListModel`, `CascadesAppBridge`)**: Exposes `bb::cascades::DataModel` for native Cascades `ListView`, `QAbstractListModel` for standard Qt model consumers, and `Q_PROPERTY` / `Q_INVOKABLE` bindings for QML.
    - **1440×1440 Square-Viewport QML UI & Active Frame (`assets/main.qml`, `assets/ActiveFrameCover.qml`)**: High-density 1:1 layout with filter navigation bar, task list, create/detail/settings modal sheets, physical keyboard `Shortcut` bindings, and minimized `SceneCover` Active Frame.
-   - **Signed-Ready BAR Packaging (`bar-descriptor.xml`, `scripts/check-package.py`)**: Produces `build/bb10/todoist-passport.bar` containing the symbol-isolated `armle-v7` ELF executable, QML assets, 144×144 launcher icon, bundled Mozilla `cacert.pem`, and third-party license notices.
+   - **Development BAR Packaging (`bar-descriptor.xml`, `scripts/check-package.py`)**: Produces `build/bb10/todoist-passport.bar` containing the symbol-isolated `armle-v7` ELF executable, QML assets, 144×144 launcher icon, bundled Mozilla `cacert.pem`, and third-party license notices.
 
 ---
 
@@ -75,7 +75,7 @@ Milestone 4 completes the end-to-end engineering assembly of **Todoist on BlackB
 ```
 
 ### 3.1 Strict Non-Blocking UI Thread Rules
-1. **Zero Network or Cryptographic I/O on Main Thread**: All HTTPS POST requests, TLS 1.3 handshakes, and delta response JSON parsing execute exclusively inside `SyncWorkerThread`.
+1. **Network I/O Off Main Thread**: All HTTPS POST requests, TLS 1.3 handshakes, and delta response JSON parsing execute exclusively inside `SyncWorkerThread`.
 2. **Bounded SQLite WAL Access**: Local UI mutations (`createTask`, `updateTask`, `toggleTaskCompleted`, `deleteTask`) execute on the local SQLite database in WAL mode via `TaskRepository`. If `SyncWorkerThread` holds an active `DatabaseManager` write transaction during delta ingestion, `DatabaseManager` waits on its condition variable (`m_txCond`), and `TodoistAppController` additionally wraps UI write calls with a bounded short retry helper so transient worker commit windows never drop a user action.
 3. **Asynchronous Event Draining**: `SyncWorkerThread` publishes state transitions (`WORKER_STATE_SYNCING`, `WORKER_STATE_SUCCESS`, `WORKER_STATE_BACKOFF_WAIT`, `WORKER_STATE_FATAL_ERROR`, `WORKER_STATE_IDLE`) into `SyncNotificationQueue`. On the UI thread, `TodoistAppController::tick(nowMs)` drains queued snapshots without blocking, reloads visible tasks on `WORKER_STATE_SUCCESS`, and emits model change notifications.
 
@@ -118,6 +118,10 @@ The BlackBerry Passport features a hardware capacitive QWERTY keyboard with dedi
 | **K / Up** | `"k"`, `"K"`, `"Up"` | Move task selection up one row | Ignored when any modal sheet is open |
 | **Escape** | `"Escape"`, `"Esc"` | Dismiss any open modal sheet (`closeSheets()`) | Active only when a modal sheet is open |
 
+The task ListView disables its built-in `SystemShortcuts.ScrollDownOneScreen`
+action so Space reaches the application completion shortcut. In 1.0.8 there is
+no in-app deletion recovery or clear selected-filter highlight; both are planned.
+
 ### 4.4 Sync Triggers, Debouncing & Active Frame Lifecycle Polling
 1. **Cold Start Sync**: During `initialize(nowMs)`, if a valid API token is stored in `sync_metadata` (`key = 'api_token'`) and network reachability is online, `triggerSyncNow(nowMs)` is invoked immediately.
 2. **Debounced Local Mutation Sync (3,000 ms)**: Every local create, edit, completion toggle, or delete arms a coalesced debounce deadline (`nowMs + m_debounceWindowMs`, default `3000` ms). Subsequent mutations within the window slide the deadline forward so rapid keyboard actions batch into a single `/api/v1/sync` round-trip.
@@ -130,7 +134,7 @@ The BlackBerry Passport features a hardware capacitive QWERTY keyboard with dedi
    - `ActiveFrameSnapshot` is recomputed on every task mutation and sync event, providing the top 4 incomplete tasks, total incomplete task count, today/overdue count, pending outbound command count, and sync status headline to `SceneCover`.
 
 ### 4.5 Authentication & HTTP 401/403 Recovery
-- Personal API Token is stored in `sync_metadata` under `"api_token"`.
+- Personal API Token is AES-encrypted before storage in `sync_metadata` under `"api_token"`. The master key is stored in a private file; the task database is ordinary SQLite, not database-wide encryption.
 - `getMaskedApiToken()` returns a redacted representation (e.g., `"••••••••1234"`) for safe UI rendering.
 - If `SyncWorkerThread` reports `WORKER_STATE_FATAL_ERROR` with HTTP `401` or `403` (or `SyncEngineState::AuthError`), `TodoistAppController` latches `requiresAuth = true`, pauses background polling, opens the Settings / Token sheet (`settingsSheetOpen = true`), and displays an authentication recovery prompt. Entering a new non-empty token clears the latch and immediately resumes synchronization.
 
@@ -144,7 +148,7 @@ The BlackBerry Passport features a hardware capacitive QWERTY keyboard with dedi
 - **Bundled Assets**:
   - `assets/main.qml`: 1440×1440 Cascades primary UI scene.
   - `assets/ActiveFrameCover.qml`: Minimized Active Frame `SceneCover` UI.
-  - `assets/icon.png`: `144×144` RGBA launcher icon adhering to the BlackBerry Passport squircle specification (`14px` transparent padding, `116×116` base footprint, `28px` corner radius, Todoist crimson gradient with white flush checkmarks and bottom-right BlackBerry emblem).
+  - `assets/icon.png`: `144×144` launcher icon (`assets/icon.png`), as included in the release package.
   - `certs/cacert.pem`: Bundled Mozilla Root CA bundle (`vendor/sources/cacert.pem`).
   - `licenses/`: Bundled `LICENSE.txt`, `curl.txt`, and `openssl.txt`.
 - **Permissions**: Minimal privilege boundary consisting exclusively of `run_native` and `access_internet`.

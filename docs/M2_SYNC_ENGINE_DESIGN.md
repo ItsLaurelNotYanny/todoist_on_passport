@@ -7,13 +7,13 @@ Milestone 2 (`todoist_sync`) implements the synchronization engine, protocol ada
 ### 1.1 Layer Separation & Ownership Boundaries
 1. **`todoist_storage` (Milestone 1, Accepted)**: Local transactional SQLite storage with WAL mode, atomic local mutations, FIFO outbound command queue (`sync_commands`), and `temp_id` remapping.
 2. **`todoist_sync` (Milestone 2, Current)**: Protocol payload builder, wire-to-domain adapter, response validator, atomic single-transaction dispatcher, deterministic sync state machine, and multi-batch queue draining. Background threading is explicitly deferred to integration (M3/M4).
-3. **`todoist_net` (Milestone 3, Transport & Retry Scheduler)**: Platform-specific network transport (libcurl / modern TLS 1.2+ / Qt QSsl), HTTP client, Bearer token auth, network reachability monitoring, exponential backoff timer scheduling, and background thread integration.
+3. **`todoist_network` (Milestone 3, Transport & Retry Scheduler)**: Platform-specific network transport (libcurl / isolated OpenSSL 3.5.9 TLS 1.2+), HTTP client, Bearer token auth, network reachability monitoring, exponential backoff timer scheduling, and background thread integration.
 4. **Cascades UI (Milestone 4, Presentation)**: QML views (1440×1440), C++ `QAbstractListModel` adapters, and keyboard navigation.
 
 ```
 +--------------------------------------------------------------------------------------------------+
 |                          Integration & Presentation (Milestones 3 & 4)                           |
-|    - Network Transport (libcurl/mbedtls), Bearer auth, exponential backoff timer scheduler       |
+|    - Network Transport (libcurl/OpenSSL), Bearer auth, exponential backoff timer scheduler       |
 |    - Cascades QML UI, TaskListModel, pull-to-refresh, background worker orchestration            |
 +--------------------------------------------------------------------------------------------------+
                                                 | Synchronous Single-Cycle API / Queue Drain
@@ -64,7 +64,7 @@ Milestone 2 (`todoist_sync`) implements the synchronization engine, protocol ada
 
   sync_token=dG9rZW5fZXhhbXBsZQ%3D%3D&resource_types=%5B%22items%22%5D&commands=%5B...%5D
   ```
-- **Resource Selection**: Strictly limited to `resource_types: ["items"]`. Project synchronization is explicitly deferred until a dedicated projects table and repository are added.
+- **Resource Selection**: The current integrated request uses `resource_types: ["items", "projects", "user"]`. Project names and the user inbox ID are persisted in `sync_metadata`; a separate projects table is not required.
 
 ### 2.2 Outbound Command Mapping
 Each internal `SyncCommand` is translated to the official Todoist API v1 schema:
@@ -289,7 +289,7 @@ SyncCycleResult SyncEngine::drainPendingQueue(ISyncTransport& transport, int max
 
 - **Selected Header**: `picojson.h` (v1.3.0, BSD 2-Clause license).
 - **Location**: `third_party/picojson/picojson.h`.
-- **Compiler Compatibility**: Strictly C++03 compliant (`-std=c++03 -Wall -Wextra -Wpedantic`). Planned validation on BB10 / QNX GCC 4.8 labeled in build files.
+- **Compiler Compatibility**: Strictly C++03 compliant (`-std=c++03 -Wall -Wextra -Wpedantic`). The target build uses the Clang-based `bb10-c++` driver from the pinned Docker environment; host builds use GCC or Clang.
 
 ---
 

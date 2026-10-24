@@ -1,6 +1,6 @@
 # Todoist on BlackBerry Passport
 
-An offline-first, native Todoist client engineered exclusively for the **BlackBerry Passport** (BlackBerry 10 OS 10.3.3.3216 / QNX 6.6).
+An unofficial, offline-first, native Todoist client engineered exclusively for the **BlackBerry Passport** (BlackBerry 10 OS 10.3.3.3216 / QNX 6.6).
 
 Built strictly in native **C++03 and POSIX C**, with zero Android runtime dependencies, fully custom Cascades QML UI tailored for the 1440×1440 square screen, physical QWERTY keyboard shortcuts, and capacitive trackpad navigation.
 
@@ -8,7 +8,7 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 
 ## Key Features
 
-- **Offline-First Architecture**: Local SQLite 3 WAL storage with AES encryption for your personal API token at rest (the task database itself is standard SQLite format). Local actions queue in `sync_command_queue` and sync upon reconnection.
+- **Offline-First Architecture**: Local SQLite 3 WAL storage with AES encryption for your personal API token at rest (the task database itself is standard SQLite format). Local actions queue in `sync_commands` and sync upon reconnection.
 - **Incremental Sync Engine**: Todoist Sync API v1 client (`https://api.todoist.com/api/v1/sync`) with `sync_token` cursor tracking, optimistic UI updates, and atomic reconciliation (`temp_id_mapping`).
 - **Modern TLS 1.3 & Symbol Isolation**: Custom statically linked OpenSSL 3.5.9 + libcurl runtime with symbol hiding (`-fvisibility=hidden`) to isolate it from BlackBerry 10's legacy system SSL libraries.
 - **Tailored for BlackBerry Passport (1440×1440, 453 PPI)**:
@@ -99,7 +99,7 @@ The supplied packaging script requires **Docker** and the local image **`bb10-na
 docker build -t bb10-native-dev:local -f docker/Dockerfile.bb10 docker
 ```
 
-The recipe extends the community [BlackBerry 10 toolchain](https://github.com/XIAZY/blackberry10-toolchain), pinned by image digest, with Perl and pkg-config. It supplies the Clang-based BB10 ARMv7 compiler drivers, BB10 10.3.1 SDK inputs, Qt 4.8/Cascades, `/opt/bb10-toolchain.cmake`, `/opt/bb10-sysroot`, and the native BAR packager. The host needs no separate NDK installation.
+The recipe extends the community [BlackBerry 10 toolchain](https://github.com/XIAZY/blackberry10-toolchain), pinned by image digest, with Perl and pkg-config. It supplies the Clang-based BB10 ARMv7 compiler drivers, BB10 10.3.1 SDK inputs, Qt 4.8/Cascades, `/opt/bb10-toolchain.cmake`, `/opt/bb10-sdk/target/qnx6`, and the native BAR packager. The host needs no separate NDK installation.
 
 Preparing the image and fetching source dependencies require network access; the packaging script runs the prepared container with networking disabled. These instructions are validated on Linux x86_64. Apple Silicon, Docker emulation, and other host platforms have not been validated for this project. The base image is pinned, but added Debian package versions are not locked; rebuilding does not guarantee a byte-identical image or BAR.
 
@@ -150,7 +150,7 @@ Detailed architecture specifications and RFCs are available in `docs/`:
 
 ### Longer Term
 
-- [ ] **Standalone `posix-tls` Subsystem**: Extract the symbol-isolated TLS 1.3 socket engine into an independent generic library for legacy POSIX and embedded systems.
+- [ ] **Standalone `posix-tls` Subsystem**: Publish the existing reusable `bb10_tls` package as a separately maintained project for legacy POSIX and embedded systems.
 - [ ] **Multi-account Support**: Support switching between personal and team Todoist accounts.
 
 ---
