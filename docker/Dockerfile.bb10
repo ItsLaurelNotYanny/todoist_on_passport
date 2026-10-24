@@ -1,0 +1,2 @@
+FROM ghcr.io/xiazy/blackberry10-toolchain@sha256:60ce49510a37ed92368cca010bbaabf97b12d209b9fab179e8491b266bb2578f
+RUN apt-get update -qq && apt-get install -y --no-install-recommends perl pkg-config && rm -rf /var/lib/apt/lists/*

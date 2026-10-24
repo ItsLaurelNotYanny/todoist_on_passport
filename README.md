@@ -8,9 +8,9 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 
 ## Key Features
 
-- **Offline-First Architecture**: High-concurrency local SQLite 3 WAL storage with AES encryption for the OAuth API token at rest (the task database itself is standard SQLite format). Local actions queue safely in `sync_command_queue` and sync seamlessly upon reconnection.
+- **Offline-First Architecture**: Local SQLite 3 WAL storage with AES encryption for your personal API token at rest (the task database itself is standard SQLite format). Local actions queue in `sync_command_queue` and sync upon reconnection.
 - **Incremental Sync Engine**: Todoist Sync API v1 client (`https://api.todoist.com/api/v1/sync`) with `sync_token` cursor tracking, optimistic UI updates, and atomic reconciliation (`temp_id_mapping`).
-- **Modern TLS 1.3 & Symbol Isolation**: Custom statically linked OpenSSL 3.5.9 + libcurl runtime with strict symbol hiding (`-fvisibility=hidden`). Completely eliminates symbol collisions with BlackBerry 10's legacy system SSL libraries.
+- **Modern TLS 1.3 & Symbol Isolation**: Custom statically linked OpenSSL 3.5.9 + libcurl runtime with symbol hiding (`-fvisibility=hidden`) to isolate it from BlackBerry 10's legacy system SSL libraries.
 - **Tailored for BlackBerry Passport (1440×1440, 453 PPI)**:
   - Custom square UI with dark theme and high-contrast 4-tier priority cards.
   - Full Active Frame cover support with live task metrics.
@@ -34,23 +34,49 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 
 ## Installation
 
-### Method A: Over-the-Air via LocalSend (Recommended)
+### Requirements and Download
 
-1. Ensure [LocalSend](https://localsend.org/) is installed and running on your BlackBerry Passport.
-2. Ensure your computer and BlackBerry Passport are on the same local Wi-Fi network.
-3. Run the automated dispatch script:
-   ```bash
-   python3 scripts/send-to-passport.py --target <PASSPORT_IP>
-   ```
-4. Tap **Accept** on the Passport screen. The `.bar` package transfers directly to your device downloads.
-5. On the Passport, open the received file in **File Manager** and install via **BAR Opener**.
+- **Tested device**: A rooted BlackBerry Passport running OS 10.3.3.3216. Build 7 is an unsigned development BAR (application version `1.0.6.7`); installation on an unrooted device has not been verified for this release.
+- **Installer**: A working BAR Opener setup on the rooted Passport for the LocalSend workflow below.
+- **Todoist account**: Create or sign in to your account using [Todoist on the web](https://app.todoist.com/) on a computer, or an officially supported Todoist app. This Passport client syncs with the same account; account registration and token retrieval take place outside it.
 
-### Method B: Sideloading via Sachesi / BB10 Command Line
+Download `todoist-passport-build-7.bar` and `SHA256SUMS` from [GitHub Releases](https://github.com/ItsLaurelNotYanny/todoist_on_passport/releases). A source checkout does not contain a BAR. If no binary release is available, follow [Building from Source](#building-from-source) first.
 
-Use standard BlackBerry 10 deployment tools:
+Verify the download from the directory containing both files:
+
 ```bash
-blackberry-deploy -installApp -device <PASSPORT_IP> -password <DEVICE_PASSWORD> build/bb10/todoist-passport.bar
+# Linux
+sha256sum -c SHA256SUMS
+# macOS
+shasum -a 256 -c SHA256SUMS
 ```
+
+The verified Build 7 SHA-256 is:
+
+```text
+57aca384791bfda6b7bc9dcf6ccf612c2863676f650ec8ce02c6242790eb5972
+```
+
+### Transfer via LocalSend and Install
+
+1. Open a compatible BB10 community LocalSend receiver on the Passport. The [official LocalSend downloads](https://localsend.org/download) do not include a BB10 build; the receiver and BAR Opener must already be installed.
+2. Connect the computer and Passport to the same local Wi-Fi network.
+3. Send the downloaded BAR using the LocalSend desktop app, or run this repository's Python 3 sender from the repository root with an explicit BAR path:
+   ```bash
+   python3 scripts/send-to-passport.py /path/to/todoist-passport-build-7.bar --target <PASSPORT_IP>
+   ```
+4. Tap **Accept** on the Passport. Find the received BAR in the receiver's save directory, such as the LocalSend directory.
+5. Open the BAR in **File Manager** and install via **BAR Opener**. File transfer and app installation are separate steps.
+
+If you already have a working Sachesi or `blackberry-deploy` setup, you can use it to deploy the downloaded BAR instead. These alternative deployment methods have not been qualified for this Build 7 release; follow your tool's device and Development Mode requirements.
+
+### First Run: Personal API Token
+
+1. On a computer, sign in to Todoist on the web and open **Settings -> Integrations -> Developer** to copy your own personal API token. See [Todoist's official token instructions](https://developer.todoist.com/).
+2. Open this app on the Passport, tap **Token**, paste the token into **Paste Personal API Token**, then tap **Save**.
+3. Tap **Sync [R]** or press **R** to synchronize. You can continue using the same account in the web app and official clients.
+
+This app uses a manually supplied personal token; it has no browser OAuth login flow. The saved token is encrypted at rest. Keep it private; the local task database itself is standard SQLite, not an encrypted database.
 
 ---
 
@@ -59,15 +85,23 @@ blackberry-deploy -installApp -device <PASSPORT_IP> -password <DEVICE_PASSWORD> 
 ### Prerequisites
 
 #### For Host Quality Gate & Testing
-- **Host OS**: Linux (Ubuntu 20.04/22.04 or compatible POSIX environment)
-- **Host Dependencies**: `cmake` (>= 3.20, required for `ctest --test-dir`), `make`, `perl` (required for OpenSSL host build), `python3` (>= 3.8), and a C/C++ compiler toolchain (gcc/g++ or clang).
-*No BlackBerry NDK or cross-toolchain is required to run the automated host test suite.*
+
+- **Host OS**: Linux x86_64. The supplied host OpenSSL recipe selects `linux-x86_64`; other host platforms are not covered by this recipe.
+- **Host dependencies**: Bash, Git, `cmake` (>= 3.20), `make`, `perl`, `python3` (>= 3.8), a C/C++ compiler toolchain (GCC/G++ or Clang), GNU binutils/coreutils, `tar`, and XZ support.
+
+No BlackBerry SDK or cross-toolchain is required for the host test suite.
 
 #### For BlackBerry 10 BAR Packaging
-- **Target Device**: BlackBerry Passport running BlackBerry 10 (OS 10.3.3.3216 / QNX 6.6).
-- **Toolchain**: BlackBerry 10 Native SDK (BB10 NDK 10.3.1 cross-compiler).
-- **Container Environment**: Docker with the local `bb10-native-dev:local` image (providing the QNX 6.6 / BB10 NDK 10.3.1 toolchain at `/opt/bb10-toolchain.cmake`).
-*Note: Because the proprietary BB10 NDK cannot be redistributed publicly, users building target packages must provide their own NDK installation or local Docker container.*
+
+The supplied packaging script requires **Docker** and the local image **`bb10-native-dev:local`**. Build that image with the included [Dockerfile](docker/Dockerfile.bb10):
+
+```bash
+docker build -t bb10-native-dev:local -f docker/Dockerfile.bb10 docker
+```
+
+The recipe extends the community [BlackBerry 10 toolchain](https://github.com/XIAZY/blackberry10-toolchain), pinned by image digest, with Perl and pkg-config. It supplies the Clang-based BB10 ARMv7 compiler drivers, BB10 10.3.1 SDK inputs, Qt 4.8/Cascades, `/opt/bb10-toolchain.cmake`, `/opt/bb10-sysroot`, and the native BAR packager. The host needs no separate NDK installation.
+
+Preparing the image and fetching source dependencies require network access; the packaging script runs the prepared container with networking disabled. These instructions are validated on Linux x86_64. Apple Silicon, Docker emulation, and other host platforms have not been validated for this project. The base image is pinned, but added Debian package versions are not locked; rebuilding does not guarantee a byte-identical image or BAR.
 
 ### Build Instructions
 
@@ -88,11 +122,11 @@ blackberry-deploy -installApp -device <PASSPORT_IP> -password <DEVICE_PASSWORD> 
    ```
    *The gate verifies dependency checksums, CMake configuration, unit tests (storage, sync, TLS, network, UI), symbol isolation, consumer packaging, asset specifications, and developer path hygiene (9/9 checks).*
 
-4. **Compile BlackBerry 10 BAR package (requires local BB10 Docker environment)**:
+4. **Prepare the Docker image** using the command in [BAR packaging prerequisites](#for-blackberry-10-bar-packaging), then **compile and package**:
    ```bash
    ./scripts/build-bb10.sh
    ```
-   *The generated package is placed at `build/bb10/todoist-passport.bar`.*
+   *The script validates the package and writes `build/bb10/todoist-passport.bar` plus `build/bb10/todoist-passport-build-7.bar`. Rebuilding overwrites these files. A new build can have a different archive checksum; the published checksum identifies the retained release BAR.*
 
 ---
 
