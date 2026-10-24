@@ -150,13 +150,12 @@ Detailed architecture specifications and RFCs are available in `docs/`:
 
 ## License & Third-Party Attributions
 
-This project's original code and Cascades QML UI are licensed under the **MIT License**. See [LICENSE](LICENSE) for details. Upstream third-party components and libraries retain their respective licenses.
+This project's original code, including the **bb10_tls** subsystem and Cascades QML UI, is licensed under the **MIT License**. See [LICENSE](LICENSE) and the [bb10_tls license notice](share/bb10_tls/LICENSE) for details. Upstream third-party components and libraries retain their respective licenses.
 
 ### Third-Party Components & Licenses
 
 - **SQLite**: Dedicated to the Public Domain ([sqlite.org](https://www.sqlite.org/))
 - **PicoJSON**: 2-Clause BSD License ([github.com/kazuho/picojson](https://github.com/kazuho/picojson))
-- **bb10_tls**: MIT License (see `share/bb10_tls/LICENSE`)
 - **OpenSSL 3.5.9**: Apache License 2.0 ([openssl.org](https://www.openssl.org/source/license.html))
 - **libcurl**: curl License / MIT derivative ([curl.se](https://curl.se/docs/copyright.html))
 
