@@ -3,7 +3,7 @@
     <id>com.todoist.passport</id>
     <name>Todoist</name>
     <versionNumber>1.0.7</versionNumber>
-    <buildId>7</buildId>
+    <buildId>0</buildId>
     <description>Native Offline-First Todoist Client for BlackBerry Passport</description>
     <author>Todoist Passport Team</author>
     <icon><image>assets/icon.png</image></icon>

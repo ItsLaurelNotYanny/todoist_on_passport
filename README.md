@@ -36,7 +36,7 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 
 ### Requirements and Download
 
-- **Tested device**: A rooted BlackBerry Passport running OS 10.3.3.3216. Release 1.0.7 is an unsigned development BAR (application version `1.0.7.7`); installation on an unrooted device has not been verified for this release.
+- **Tested device**: A rooted BlackBerry Passport running OS 10.3.3.3216. Release 1.0.7 is an unsigned development BAR (application version `1.0.7.0`); installation on an unrooted device has not been verified for this release.
 - **Todoist account**: Create or sign in to your account using [Todoist on the web](https://app.todoist.com/) on a computer, or an officially supported Todoist app. This Passport client syncs with the same account; account registration and token retrieval take place outside it.
 
 Download `todoist-passport-1.0.7.bar` and `SHA256SUMS` from [GitHub Releases](https://github.com/ItsLaurelNotYanny/todoist_on_passport/releases). A source checkout does not contain a BAR. If no binary release is available, follow [Building from Source](#building-from-source) first.
@@ -53,7 +53,7 @@ shasum -a 256 -c SHA256SUMS
 The release 1.0.7 SHA-256 is:
 
 ```text
-7df8a88f7020566b0fdd6c3671054115e2cc9a722d4264a9b7c1c1a8b42c162a
+8a4bebc95bdc2c33b39f51af6eb5ad92872cd9d79ce6c754fc4703458cd9f11f
 ```
 
 ### Install the BAR
@@ -116,7 +116,7 @@ Preparing the image and fetching source dependencies require network access; the
    ```bash
    ./scripts/build-bb10.sh
    ```
-   *The script validates the package and writes `build/bb10/todoist-passport.bar` plus `build/bb10/todoist-passport-build-7.bar`. Rebuilding overwrites these files. A new build can have a different archive checksum; the published checksum identifies the retained release BAR.*
+   *The script validates the package and writes `build/bb10/todoist-passport.bar`. Rebuilding overwrites this file. A new build can have a different archive checksum; the published checksum identifies the retained release BAR.*
 
 ---
 

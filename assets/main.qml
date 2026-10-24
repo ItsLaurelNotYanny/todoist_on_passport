@@ -789,6 +789,8 @@ Page {
             dataModel: appBridge.taskModel
             scrollRole: ScrollRole.Main
             flickMode: FlickMode.Momentum
+            // Let the page's Space shortcut complete tasks instead of paging.
+            onCreationCompleted: setBuiltInShortcutEnabled(SystemShortcuts.ScrollDownOneScreen, false)
 
             eventHandlers: [
                 TrackpadHandler {
