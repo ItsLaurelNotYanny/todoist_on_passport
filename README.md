@@ -18,6 +18,14 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 
 ---
 
+## Screenshots
+
+| Task list | Create a task | Active Frame |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/task-list.png" width="280" alt="Task list with priority cards and filters"> | <img src="docs/screenshots/new-task.png" width="280" alt="New task with priority and due date"> | <img src="docs/screenshots/active-frame.png" width="280" alt="Minimized app showing task counts and a preview"> |
+
+---
+
 ## Physical Keyboard Shortcuts
 
 | Key | Action |
@@ -132,6 +140,13 @@ Detailed architecture specifications and RFCs are available in `docs/`:
 ---
 
 ## Project Roadmap
+
+### Next Update
+
+- [ ] **Accidental deletion recovery and keyboard safety**: Add a way to recover accidentally deleted tasks and address the conflict between Backspace for text editing and task deletion.
+- [ ] **Visible active tab**: Clearly highlight the selected Inbox, Today, All, Done, or Projects view so users can identify their current page.
+
+### Longer Term
 
 - [ ] **Standalone `posix-tls` Subsystem**: Extract the symbol-isolated TLS 1.3 socket engine into an independent generic library for legacy POSIX and embedded systems.
 - [ ] **Multi-account Support**: Support switching between personal and team Todoist accounts.
