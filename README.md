@@ -73,7 +73,7 @@ blackberry-deploy -installApp -device <PASSPORT_IP> -password <DEVICE_PASSWORD> 
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourname/todoist_on_passport.git
+   git clone https://github.com/ItsLaurelNotYanny/todoist_on_passport.git
    cd todoist_on_passport
    ```
 
