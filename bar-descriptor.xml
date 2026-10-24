@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<qnx xmlns="http://www.qnx.com/schemas/application/1.0">
+    <id>com.todoist.passport</id>
+    <name>Todoist</name>
+    <versionNumber>1.0.6</versionNumber>
+    <buildId>7</buildId>
+    <description>Native Offline-First Todoist Client for BlackBerry Passport</description>
+    <author>Todoist Passport Team</author>
+    <icon><image>assets/icon.png</image></icon>
+    <initialWindow><autoOrients>true</autoOrients><systemChrome>none</systemChrome></initialWindow>
+    <configuration name="Device-Debug">
+        <platformArchitecture>armle-v7</platformArchitecture>
+        <asset path="build/bb10/todoist-passport" entry="true" type="Qnx/Elf">todoist-passport</asset>
+    </configuration>
+    <asset path="assets">assets</asset>
+    <asset path="vendor/sources/cacert.pem">certs/cacert.pem</asset>
+    <asset path="share/bb10_tls/LICENSE">licenses/LICENSE.txt</asset>
+    <asset path="build/dependency-sources/curl-8.23.0/COPYING">licenses/curl.txt</asset>
+    <asset path="build/dependency-sources/openssl-3.5.9/LICENSE.txt">licenses/openssl.txt</asset>
+    <permission system="true">run_native</permission>
+    <permission>access_internet</permission>
+    <env var="LD_LIBRARY_PATH" value="/usr/lib/qt4/lib:/usr/lib"/>
+</qnx>
