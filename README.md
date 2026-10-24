@@ -132,12 +132,8 @@ Preparing the image and fetching source dependencies require network access; the
 
 ## Technical Documentation
 
-Detailed architecture specifications and RFCs are available in `docs/`:
-
-- [M2: Sync Engine Architecture RFC](docs/M2_SYNC_ENGINE_DESIGN.md)
-- [M3: Isolated TLS 1.3 & Network Architecture RFC](docs/M3_TLS_NETWORK_ARCHITECTURE_RFC.md)
-- [M4: Cascades UI & Hardware Interaction RFC](docs/M4_CASCADES_UI_SYSTEM_RFC.md)
-- [Todoist Sync API Protocol Reference](docs/TODOIST_SYNC_ARCHITECTURE.md)
+- [Current application architecture and synchronization](docs/TODOIST_SYNC_ARCHITECTURE.md)
+- [bb10_tls API contracts and consumer examples](share/bb10_tls/README.md)
 
 ---
 

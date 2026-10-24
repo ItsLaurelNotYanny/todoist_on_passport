@@ -1,11 +1,8 @@
 # Todoist on BlackBerry Passport: Current Architecture and Sync Reference
 
 This document describes the implemented application. For downloads, installation
-and first-run setup, use the [README](../README.md#installation). Detailed module
-contracts are in the [M2](M2_SYNC_ENGINE_DESIGN.md),
-[M3](M3_TLS_NETWORK_ARCHITECTURE_RFC.md) and
-[M4](M4_CASCADES_UI_SYSTEM_RFC.md) specifications. Proposed hardware test scenarios
-in those specifications do not by themselves establish release qualification.
+and first-run setup, use the [README](../README.md#installation). TLS API contracts
+and runnable examples are in the [bb10_tls guide](../share/bb10_tls/README.md).
 
 ## 1. Product Scope
 
@@ -39,7 +36,7 @@ a QNX system-keystore integration. The task database remains ordinary SQLite.
 The storage implementation uses SQLite WAL transactions with tasks, command
 queue (`sync_commands`), baselines, metadata and dead-letter commands
 (`dead_letter_commands`). Project names and the user's inbox ID are stored in
-metadata. See the storage implementation and M2 for exact schema contracts;
+metadata. See the storage and sync implementation for exact schema contracts;
 this document does not prescribe a second schema.
 
 ## 3. Sync Protocol
