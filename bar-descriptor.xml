@@ -2,7 +2,7 @@
 <qnx xmlns="http://www.qnx.com/schemas/application/1.0">
     <id>com.todoist.passport</id>
     <name>Todoist</name>
-    <versionNumber>1.0.7</versionNumber>
+    <versionNumber>1.0.8</versionNumber>
     <buildId>0</buildId>
     <description>Native Offline-First Todoist Client for BlackBerry Passport</description>
     <author>Todoist Passport Team</author>

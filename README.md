@@ -36,10 +36,10 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 
 ### Requirements and Download
 
-- **Tested device**: A rooted BlackBerry Passport running OS 10.3.3.3216. Release 1.0.7 is an unsigned development BAR (application version `1.0.7.0`); installation on an unrooted device has not been verified for this release.
+- **Tested device**: A rooted BlackBerry Passport running OS 10.3.3.3216. Release 1.0.8 is an unsigned development BAR (application version `1.0.8.0`); installation on an unrooted device has not been verified for this release.
 - **Todoist account**: Create or sign in to your account using [Todoist on the web](https://app.todoist.com/) on a computer, or an officially supported Todoist app. This Passport client syncs with the same account; account registration and token retrieval take place outside it.
 
-Download `todoist-passport-1.0.7.bar` and `SHA256SUMS` from [GitHub Releases](https://github.com/ItsLaurelNotYanny/todoist_on_passport/releases). A source checkout does not contain a BAR. If no binary release is available, follow [Building from Source](#building-from-source) first.
+Download `todoist-passport-1.0.8.bar` and `SHA256SUMS` from [GitHub Releases](https://github.com/ItsLaurelNotYanny/todoist_on_passport/releases). A source checkout does not contain a BAR. If no binary release is available, follow [Building from Source](#building-from-source) first.
 
 Verify the download from the directory containing both files:
 
@@ -50,10 +50,10 @@ sha256sum -c SHA256SUMS
 shasum -a 256 -c SHA256SUMS
 ```
 
-The release 1.0.7 SHA-256 is:
+The release 1.0.8 SHA-256 is:
 
 ```text
-8a4bebc95bdc2c33b39f51af6eb5ad92872cd9d79ce6c754fc4703458cd9f11f
+442d440ea6fae9b8d6b5e6964e4b58b9a86156c936470bd0017022a203465f5f
 ```
 
 ### Install the BAR
