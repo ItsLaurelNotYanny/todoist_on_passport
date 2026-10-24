@@ -37,7 +37,6 @@ Built strictly in native **C++03 and POSIX C**, with zero Android runtime depend
 ### Requirements and Download
 
 - **Tested device**: A rooted BlackBerry Passport running OS 10.3.3.3216. Build 7 is an unsigned development BAR (application version `1.0.6.7`); installation on an unrooted device has not been verified for this release.
-- **Installer**: A working BAR Opener setup on the rooted Passport for the LocalSend workflow below.
 - **Todoist account**: Create or sign in to your account using [Todoist on the web](https://app.todoist.com/) on a computer, or an officially supported Todoist app. This Passport client syncs with the same account; account registration and token retrieval take place outside it.
 
 Download `todoist-passport-build-7.bar` and `SHA256SUMS` from [GitHub Releases](https://github.com/ItsLaurelNotYanny/todoist_on_passport/releases). A source checkout does not contain a BAR. If no binary release is available, follow [Building from Source](#building-from-source) first.
@@ -57,18 +56,9 @@ The verified Build 7 SHA-256 is:
 57aca384791bfda6b7bc9dcf6ccf612c2863676f650ec8ce02c6242790eb5972
 ```
 
-### Transfer via LocalSend and Install
+### Install the BAR
 
-1. Open a compatible BB10 community LocalSend receiver on the Passport. The [official LocalSend downloads](https://localsend.org/download) do not include a BB10 build; the receiver and BAR Opener must already be installed.
-2. Connect the computer and Passport to the same local Wi-Fi network.
-3. Send the downloaded BAR using the LocalSend desktop app, or run this repository's Python 3 sender from the repository root with an explicit BAR path:
-   ```bash
-   python3 scripts/send-to-passport.py /path/to/todoist-passport-build-7.bar --target <PASSPORT_IP>
-   ```
-4. Tap **Accept** on the Passport. Find the received BAR in the receiver's save directory, such as the LocalSend directory.
-5. Open the BAR in **File Manager** and install via **BAR Opener**. File transfer and app installation are separate steps.
-
-If you already have a working Sachesi or `blackberry-deploy` setup, you can use it to deploy the downloaded BAR instead. These alternative deployment methods have not been qualified for this Build 7 release; follow your tool's device and Development Mode requirements.
+Install the downloaded BAR using a BB10 installer or deployment tool compatible with your device, such as BAR Opener, Sachesi, or `blackberry-deploy`. Use whichever transfer method your setup requires, and follow your chosen tool's installation and Development Mode instructions.
 
 ### First Run: Personal API Token
 
